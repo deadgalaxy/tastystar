@@ -1,0 +1,3570 @@
+%!PS-Adobe-3.0
+%%Title: COPYING, build.xml, revision.sh, checks.xml, header.txt, ivy.xml, ivysettings.xml, Implementation.java, UnannotatedAbstractMethod.java, UnannotatedConcreteMethod.java
+%%For: vagrant
+%%Creator: a2ps version 4.14
+%%CreationDate: Thu Oct 29 08:30:44 2015
+%%BoundingBox: 24 24 588 768
+%%DocumentData: Clean7Bit
+%%Orientation: Portrait
+%%Pages: 40
+%%PageOrder: Ascend
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontType get 0 eq {
+    currentfont /FontMatrix get 3 get
+  }{
+    currentfont /FontMatrix get 3 get 1000 mul
+  } ifelse
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      % <vector> <key> <val>
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def % -
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Get the underline position and thickness if they're defined.
+    % Use 1 if they are not defined.
+    currentdict /FontInfo 2 copy known
+    { get
+      /UnderlinePosition 2 copy % <FontInfo> /UP <FontInfo> /UP
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+
+      /UnderlineThickness 2 copy % <FontInfo> /UT <FontInfo> /UT
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+      pop % -
+    }{ pop pop
+    } ifelse
+
+    currentdict
+  end 
+} bind def
+
+% composite fonts for ASCII-EUC mixed string
+% Version 1.2 1/31/1990
+% Orignal Ken'ichi HANDA (handa@etl.go.jp)
+% Modified Norio Katayama (katayama@rd.nacsis.ac.jp),1998
+% Extend & Fix Koji Nakamaru (maru@on.cs.keio.ac.jp), 1999
+% Anyone can freely copy, modify, distribute this program.
+
+/copyfont {	% font-dic extra-entry-count  copyfont  font-dic
+	1 index maxlength add dict begin
+	{	1 index /FID ne 2 index /UniqueID ne and
+		{def} {pop pop} ifelse
+	} forall
+	currentdict
+	end
+} bind def
+
+/compositefont { % ASCIIFontName EUCFontName RomanScale RomanOffset Rot(T/F) compositefont font
+    /RomanRotation exch def
+    /RomanOffset exch def
+    /RomanScale exch def
+    userdict /fixeucfont_dict known not {
+	userdict begin
+	    /fixeucfont_dict 2 dict begin
+		/UpperByteEncoding [
+		    16#00 1 16#20 { pop 0 } for
+		    16#21 1 16#28 { 16#20 sub } for
+		    16#29 1 16#2F { pop 0 } for
+		    16#30 1 16#74 { 16#27 sub } for
+		    16#75 1 16#FF { pop 0 } for
+		] def
+	        /LowerByteEncoding [
+		    16#00 1 16#A0 { pop /.notdef } for
+		    16#A1 1 16#FE { 16#80 sub 16 2 string cvrs
+				    (cXX) dup 1 4 -1 roll
+				    putinterval cvn } for
+		    /.notdef
+		] def
+		currentdict
+	    end def
+	end
+    } if
+    findfont dup /FontType get 0 eq {
+	14 dict begin
+	    %
+	    % 7+8 bit EUC font
+	    %
+	    12 dict begin
+		/EUCFont exch def
+		/FontInfo (7+8 bit EUC font) readonly def
+		/PaintType 0 def
+		/FontType 0 def
+		/FontMatrix matrix def
+		% /FontName
+		/Encoding fixeucfont_dict /UpperByteEncoding get def
+		/FMapType 2 def
+		EUCFont /WMode known
+		{ EUCFont /WMode get /WMode exch def }
+		{ /WMode 0 def } ifelse
+		/FDepVector [
+		    EUCFont /FDepVector get 0 get
+		    [ 16#21 1 16#28 {} for 16#30 1 16#74 {} for ]
+		    {
+			13 dict begin
+			    /EUCFont EUCFont def
+			    /UpperByte exch 16#80 add def	
+			    % /FontName
+			    /FontInfo (EUC lower byte font) readonly def
+			    /PaintType 0 def
+			    /FontType 3 def
+			    /FontMatrix matrix def
+			    /FontBBox {0 0 0 0} def
+			    /Encoding
+				fixeucfont_dict /LowerByteEncoding get def
+			    % /UniqueID
+			    % /WMode
+			    /BuildChar {
+				gsave
+				exch dup /EUCFont get setfont
+				/UpperByte get
+				2 string
+				dup 0 4 -1 roll put
+				dup 1 4 -1 roll put
+				dup stringwidth setcharwidth
+				0 0 moveto show
+				grestore
+			    } bind def
+			    currentdict
+			end
+			/lowerbytefont exch definefont
+		    } forall
+		] def
+		currentdict
+	    end
+	    /eucfont exch definefont
+	    exch
+	    findfont 1 copyfont dup begin
+		RomanRotation {
+			/FontMatrix FontMatrix
+			[ 0 RomanScale neg RomanScale 0 RomanOffset neg 0 ]
+			matrix concatmatrix def
+		}{
+			/FontMatrix FontMatrix
+			[ RomanScale 0 0 RomanScale 0 RomanOffset ] matrix concatmatrix
+			def
+			/CDevProc
+			    {pop pop pop pop 0 exch -1000 exch 2 div 880} def
+		} ifelse
+	    end
+	    /asciifont exch definefont
+	    exch
+	    /FDepVector [ 4 2 roll ] def
+	    /FontType 0 def
+	    /WMode 0 def
+	    /FMapType 4 def
+	    /FontMatrix matrix def
+	    /Encoding [0 1] def
+	    /FontBBox {0 0 0 0} def
+%	    /FontHeight 1.0 def % XXXX
+	    /FontHeight RomanScale 1.0 ge { RomanScale }{ 1.0 } ifelse def
+	    /Descent -0.3 def   % XXXX
+	    currentdict
+	end
+	/tmpfont exch definefont
+	pop
+	/tmpfont findfont
+    }{
+	pop findfont 0 copyfont
+    } ifelse
+} def	
+
+/slantfont {	% FontName slant-degree  slantfont  font'
+    exch findfont 1 copyfont begin
+    [ 1 0 4 -1 roll 1 0 0 ] FontMatrix exch matrix concatmatrix
+    /FontMatrix exch def
+    currentdict
+    end
+} def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 792 def
+/sw 612 def
+/llx 24 def
+/urx 588 def
+/ury 768 def
+/lly 24 def
+/#copies 1 def
+/th 20.000000 def
+/fnfs 15 def
+/bfs 11.547912 def
+/cw 6.928747 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 81.400000 mul
+def
+/ph
+   689.410325 th add
+def
+/pmw 0 def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+] def
+/y [
+  pmh ph add 0 mul ph add
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 0 def
+/tab 8 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1) 1
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(                    GNU GENERAL PUBLIC LICENSE) p n
+(                       Version 3, 29 June 2007) N
+() N
+( Copyright \(C\) 2007 Free Software Foundation, Inc. <http://fsf.org/>) N
+( Everyone is permitted to copy and distribute verbatim copies) N
+( of this license document, but changing it is not allowed.) N
+() N
+(                            Preamble) N
+() N
+(  The GNU General Public License is a free, copyleft license for) N
+(software and other kinds of works.) N
+() N
+(  The licenses for most software and other practical works are designed) N
+(to take away your freedom to share and change the works.  By contrast,) N
+(the GNU General Public License is intended to guarantee your freedom to) N
+(share and change all versions of a program--to make sure it remains free) N
+(software for all its users.  We, the Free Software Foundation, use the) N
+(GNU General Public License for most of our software; it applies also to) N
+(any other work released this way by its authors.  You can apply it to) N
+(your programs, too.) N
+() N
+(  When we speak of free software, we are referring to freedom, not) N
+(price.  Our General Public Licenses are designed to make sure that you) N
+(have the freedom to distribute copies of free software \(and charge for) N
+(them if you wish\), that you receive source code or can get it if you) N
+(want it, that you can change the software or use pieces of it in new) N
+(free programs, and that you know you can do these things.) N
+() N
+(  To protect your rights, we need to prevent others from denying you) N
+(these rights or asking you to surrender the rights.  Therefore, you have) N
+(certain responsibilities if you distribute copies of the software, or if) N
+(you modify it: responsibilities to respect the freedom of others.) N
+() N
+(  For example, if you distribute copies of such a program, whether) N
+(gratis or for a fee, you must pass on to the recipients the same) N
+(freedoms that you received.  You must make sure that they, too, receive) N
+(or can get the source code.  And you must show them these terms so they) N
+(know their rights.) N
+() N
+(  Developers that use the GNU GPL protect your rights with two steps:) N
+(\(1\) assert copyright on the software, and \(2\) offer you this License) N
+(giving you legal permission to copy, distribute and/or modify it.) N
+() N
+(  For the developers' and authors' protection, the GPL clearly explains) N
+(that there is no warranty for this free software.  For both users' and) N
+(authors' sake, the GPL requires that modified versions be marked as) N
+(changed, so that their problems will not be attributed erroneously to) N
+(authors of previous versions.) N
+() N
+(  Some devices are designed to deny users access to install or run) N
+(modified versions of the software inside them, although the manufacturer) N
+(can do so.  This is fundamentally incompatible with the aim of) N
+(protecting users' freedom to change the software.  The systematic) N
+(pattern of such abuse occurs in the area of products for individuals to) N
+(use, which is precisely where it is most unacceptable.  Therefore, we) N
+(have designed this version of the GPL to prohibit the practice for those) N
+(products.  If such problems arise substantially in other domains, we) N
+(stand ready to extend this provision to those domains in future versions) N
+(of the GPL, as needed to protect the freedom of users.) N
+(COPYING) (Page 1/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (1/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 2
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(  Finally, every program is threatened constantly by software patents.) N
+(States should not allow patents to restrict development and use of) N
+(software on general-purpose computers, but in those that do, we wish to) N
+(avoid the special danger that patents applied to a free program could) N
+(make it effectively proprietary.  To prevent this, the GPL assures that) N
+(patents cannot be used to render the program non-free.) N
+() N
+(  The precise terms and conditions for copying, distribution and) N
+(modification follow.) N
+() N
+(                       TERMS AND CONDITIONS) N
+() N
+(  0. Definitions.) N
+() N
+(  "This License" refers to version 3 of the GNU General Public License.) N
+() N
+(  "Copyright" also means copyright-like laws that apply to other kinds of) N
+(works, such as semiconductor masks.) N
+() N
+(  "The Program" refers to any copyrightable work licensed under this) N
+(License.  Each licensee is addressed as "you".  "Licensees" and) N
+("recipients" may be individuals or organizations.) N
+() N
+(  To "modify" a work means to copy from or adapt all or part of the work) N
+(in a fashion requiring copyright permission, other than the making of an) N
+(exact copy.  The resulting work is called a "modified version" of the) N
+(earlier work or a work "based on" the earlier work.) N
+() N
+(  A "covered work" means either the unmodified Program or a work based) N
+(on the Program.) N
+() N
+(  To "propagate" a work means to do anything with it that, without) N
+(permission, would make you directly or secondarily liable for) N
+(infringement under applicable copyright law, except executing it on a) N
+(computer or modifying a private copy.  Propagation includes copying,) N
+(distribution \(with or without modification\), making available to the) N
+(public, and in some countries other activities as well.) N
+() N
+(  To "convey" a work means any kind of propagation that enables other) N
+(parties to make or receive copies.  Mere interaction with a user through) N
+(a computer network, with no transfer of a copy, is not conveying.) N
+() N
+(  An interactive user interface displays "Appropriate Legal Notices") N
+(to the extent that it includes a convenient and prominently visible) N
+(feature that \(1\) displays an appropriate copyright notice, and \(2\)) N
+(tells the user that there is no warranty for the work \(except to the) N
+(extent that warranties are provided\), that licensees may convey the) N
+(work under this License, and how to view a copy of this License.  If) N
+(the interface presents a list of user commands or options, such as a) N
+(menu, a prominent item in the list meets this criterion.) N
+() N
+(  1. Source Code.) N
+() N
+(  The "source code" for a work means the preferred form of the work) N
+(for making modifications to it.  "Object code" means any non-source) N
+(form of a work.) N
+() N
+(  A "Standard Interface" means an interface that either is an official) N
+(COPYING) (Page 2/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (2/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 3
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(standard defined by a recognized standards body, or, in the case of) p n
+(interfaces specified for a particular programming language, one that) N
+(is widely used among developers working in that language.) N
+() N
+(  The "System Libraries" of an executable work include anything, other) N
+(than the work as a whole, that \(a\) is included in the normal form of) N
+(packaging a Major Component, but which is not part of that Major) N
+(Component, and \(b\) serves only to enable use of the work with that) N
+(Major Component, or to implement a Standard Interface for which an) N
+(implementation is available to the public in source code form.  A) N
+("Major Component", in this context, means a major essential component) N
+(\(kernel, window system, and so on\) of the specific operating system) N
+(\(if any\) on which the executable work runs, or a compiler used to) N
+(produce the work, or an object code interpreter used to run it.) N
+() N
+(  The "Corresponding Source" for a work in object code form means all) N
+(the source code needed to generate, install, and \(for an executable) N
+(work\) run the object code and to modify the work, including scripts to) N
+(control those activities.  However, it does not include the work's) N
+(System Libraries, or general-purpose tools or generally available free) N
+(programs which are used unmodified in performing those activities but) N
+(which are not part of the work.  For example, Corresponding Source) N
+(includes interface definition files associated with source files for) N
+(the work, and the source code for shared libraries and dynamically) N
+(linked subprograms that the work is specifically designed to require,) N
+(such as by intimate data communication or control flow between those) N
+(subprograms and other parts of the work.) N
+() N
+(  The Corresponding Source need not include anything that users) N
+(can regenerate automatically from other parts of the Corresponding) N
+(Source.) N
+() N
+(  The Corresponding Source for a work in source code form is that) N
+(same work.) N
+() N
+(  2. Basic Permissions.) N
+() N
+(  All rights granted under this License are granted for the term of) N
+(copyright on the Program, and are irrevocable provided the stated) N
+(conditions are met.  This License explicitly affirms your unlimited) N
+(permission to run the unmodified Program.  The output from running a) N
+(covered work is covered by this License only if the output, given its) N
+(content, constitutes a covered work.  This License acknowledges your) N
+(rights of fair use or other equivalent, as provided by copyright law.) N
+() N
+(  You may make, run and propagate covered works that you do not) N
+(convey, without conditions so long as your license otherwise remains) N
+(in force.  You may convey covered works to others for the sole purpose) N
+(of having them make modifications exclusively for you, or provide you) N
+(with facilities for running those works, provided that you comply with) N
+(the terms of this License in conveying all material for which you do) N
+(not control copyright.  Those thus making or running the covered works) N
+(for you must do so exclusively on your behalf, under your direction) N
+(and control, on terms that prohibit them from making any copies of) N
+(your copyrighted material outside their relationship with you.) N
+() N
+(  Conveying under any other circumstances is permitted solely under) N
+(the conditions stated below.  Sublicensing is not allowed; section 10) N
+(makes it unnecessary.) N
+(COPYING) (Page 3/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (3/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (4) 4
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(  3. Protecting Users' Legal Rights From Anti-Circumvention Law.) N
+() N
+(  No covered work shall be deemed part of an effective technological) N
+(measure under any applicable law fulfilling obligations under article) N
+(11 of the WIPO copyright treaty adopted on 20 December 1996, or) N
+(similar laws prohibiting or restricting circumvention of such) N
+(measures.) N
+() N
+(  When you convey a covered work, you waive any legal power to forbid) N
+(circumvention of technological measures to the extent such circumvention) N
+(is effected by exercising rights under this License with respect to) N
+(the covered work, and you disclaim any intention to limit operation or) N
+(modification of the work as a means of enforcing, against the work's) N
+(users, your or third parties' legal rights to forbid circumvention of) N
+(technological measures.) N
+() N
+(  4. Conveying Verbatim Copies.) N
+() N
+(  You may convey verbatim copies of the Program's source code as you) N
+(receive it, in any medium, provided that you conspicuously and) N
+(appropriately publish on each copy an appropriate copyright notice;) N
+(keep intact all notices stating that this License and any) N
+(non-permissive terms added in accord with section 7 apply to the code;) N
+(keep intact all notices of the absence of any warranty; and give all) N
+(recipients a copy of this License along with the Program.) N
+() N
+(  You may charge any price or no price for each copy that you convey,) N
+(and you may offer support or warranty protection for a fee.) N
+() N
+(  5. Conveying Modified Source Versions.) N
+() N
+(  You may convey a work based on the Program, or the modifications to) N
+(produce it from the Program, in the form of source code under the) N
+(terms of section 4, provided that you also meet all of these conditions:) N
+() N
+(    a\) The work must carry prominent notices stating that you modified) N
+(    it, and giving a relevant date.) N
+() N
+(    b\) The work must carry prominent notices stating that it is) N
+(    released under this License and any conditions added under section) N
+(    7.  This requirement modifies the requirement in section 4 to) N
+(    "keep intact all notices".) N
+() N
+(    c\) You must license the entire work, as a whole, under this) N
+(    License to anyone who comes into possession of a copy.  This) N
+(    License will therefore apply, along with any applicable section 7) N
+(    additional terms, to the whole of the work, and all its parts,) N
+(    regardless of how they are packaged.  This License gives no) N
+(    permission to license the work in any other way, but it does not) N
+(    invalidate such permission if you have separately received it.) N
+() N
+(    d\) If the work has interactive user interfaces, each must display) N
+(    Appropriate Legal Notices; however, if the Program has interactive) N
+(    interfaces that do not display Appropriate Legal Notices, your) N
+(    work need not make them do so.) N
+() N
+(  A compilation of a covered work with other separate and independent) N
+(works, which are not by their nature extensions of the covered work,) N
+(COPYING) (Page 4/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (4/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5) 5
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(and which are not combined with it such as to form a larger program,) p n
+(in or on a volume of a storage or distribution medium, is called an) N
+("aggregate" if the compilation and its resulting copyright are not) N
+(used to limit the access or legal rights of the compilation's users) N
+(beyond what the individual works permit.  Inclusion of a covered work) N
+(in an aggregate does not cause this License to apply to the other) N
+(parts of the aggregate.) N
+() N
+(  6. Conveying Non-Source Forms.) N
+() N
+(  You may convey a covered work in object code form under the terms) N
+(of sections 4 and 5, provided that you also convey the) N
+(machine-readable Corresponding Source under the terms of this License,) N
+(in one of these ways:) N
+() N
+(    a\) Convey the object code in, or embodied in, a physical product) N
+(    \(including a physical distribution medium\), accompanied by the) N
+(    Corresponding Source fixed on a durable physical medium) N
+(    customarily used for software interchange.) N
+() N
+(    b\) Convey the object code in, or embodied in, a physical product) N
+(    \(including a physical distribution medium\), accompanied by a) N
+(    written offer, valid for at least three years and valid for as) N
+(    long as you offer spare parts or customer support for that product) N
+(    model, to give anyone who possesses the object code either \(1\) a) N
+(    copy of the Corresponding Source for all the software in the) N
+(    product that is covered by this License, on a durable physical) N
+(    medium customarily used for software interchange, for a price no) N
+(    more than your reasonable cost of physically performing this) N
+(    conveying of source, or \(2\) access to copy the) N
+(    Corresponding Source from a network server at no charge.) N
+() N
+(    c\) Convey individual copies of the object code with a copy of the) N
+(    written offer to provide the Corresponding Source.  This) N
+(    alternative is allowed only occasionally and noncommercially, and) N
+(    only if you received the object code with such an offer, in accord) N
+(    with subsection 6b.) N
+() N
+(    d\) Convey the object code by offering access from a designated) N
+(    place \(gratis or for a charge\), and offer equivalent access to the) N
+(    Corresponding Source in the same way through the same place at no) N
+(    further charge.  You need not require recipients to copy the) N
+(    Corresponding Source along with the object code.  If the place to) N
+(    copy the object code is a network server, the Corresponding Source) N
+(    may be on a different server \(operated by you or a third party\)) N
+(    that supports equivalent copying facilities, provided you maintain) N
+(    clear directions next to the object code saying where to find the) N
+(    Corresponding Source.  Regardless of what server hosts the) N
+(    Corresponding Source, you remain obligated to ensure that it is) N
+(    available for as long as needed to satisfy these requirements.) N
+() N
+(    e\) Convey the object code using peer-to-peer transmission, provided) N
+(    you inform other peers where the object code and Corresponding) N
+(    Source of the work are being offered to the general public at no) N
+(    charge under subsection 6d.) N
+() N
+(  A separable portion of the object code, whose source code is excluded) N
+(from the Corresponding Source as a System Library, need not be) N
+(included in conveying the object code work.) N
+(COPYING) (Page 5/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (5/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (6) 6
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(  A "User Product" is either \(1\) a "consumer product", which means any) N
+(tangible personal property which is normally used for personal, family,) N
+(or household purposes, or \(2\) anything designed or sold for incorporation) N
+(into a dwelling.  In determining whether a product is a consumer product,) N
+(doubtful cases shall be resolved in favor of coverage.  For a particular) N
+(product received by a particular user, "normally used" refers to a) N
+(typical or common use of that class of product, regardless of the status) N
+(of the particular user or of the way in which the particular user) N
+(actually uses, or expects or is expected to use, the product.  A product) N
+(is a consumer product regardless of whether the product has substantial) N
+(commercial, industrial or non-consumer uses, unless such uses represent) N
+(the only significant mode of use of the product.) N
+() N
+(  "Installation Information" for a User Product means any methods,) N
+(procedures, authorization keys, or other information required to install) N
+(and execute modified versions of a covered work in that User Product from) N
+(a modified version of its Corresponding Source.  The information must) N
+(suffice to ensure that the continued functioning of the modified object) N
+(code is in no case prevented or interfered with solely because) N
+(modification has been made.) N
+() N
+(  If you convey an object code work under this section in, or with, or) N
+(specifically for use in, a User Product, and the conveying occurs as) N
+(part of a transaction in which the right of possession and use of the) N
+(User Product is transferred to the recipient in perpetuity or for a) N
+(fixed term \(regardless of how the transaction is characterized\), the) N
+(Corresponding Source conveyed under this section must be accompanied) N
+(by the Installation Information.  But this requirement does not apply) N
+(if neither you nor any third party retains the ability to install) N
+(modified object code on the User Product \(for example, the work has) N
+(been installed in ROM\).) N
+() N
+(  The requirement to provide Installation Information does not include a) N
+(requirement to continue to provide support service, warranty, or updates) N
+(for a work that has been modified or installed by the recipient, or for) N
+(the User Product in which it has been modified or installed.  Access to a) N
+(network may be denied when the modification itself materially and) N
+(adversely affects the operation of the network or violates the rules and) N
+(protocols for communication across the network.) N
+() N
+(  Corresponding Source conveyed, and Installation Information provided,) N
+(in accord with this section must be in a format that is publicly) N
+(documented \(and with an implementation available to the public in) N
+(source code form\), and must require no special password or key for) N
+(unpacking, reading or copying.) N
+() N
+(  7. Additional Terms.) N
+() N
+(  "Additional permissions" are terms that supplement the terms of this) N
+(License by making exceptions from one or more of its conditions.) N
+(Additional permissions that are applicable to the entire Program shall) N
+(be treated as though they were included in this License, to the extent) N
+(that they are valid under applicable law.  If additional permissions) N
+(apply only to part of the Program, that part may be used separately) N
+(under those permissions, but the entire Program remains governed by) N
+(this License without regard to the additional permissions.) N
+() N
+(  When you convey a copy of a covered work, you may at your option) N
+(COPYING) (Page 6/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (6/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (7) 7
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(remove any additional permissions from that copy, or from any part of) p n
+(it.  \(Additional permissions may be written to require their own) N
+(removal in certain cases when you modify the work.\)  You may place) N
+(additional permissions on material, added by you to a covered work,) N
+(for which you have or can give appropriate copyright permission.) N
+() N
+(  Notwithstanding any other provision of this License, for material you) N
+(add to a covered work, you may \(if authorized by the copyright holders of) N
+(that material\) supplement the terms of this License with terms:) N
+() N
+(    a\) Disclaiming warranty or limiting liability differently from the) N
+(    terms of sections 15 and 16 of this License; or) N
+() N
+(    b\) Requiring preservation of specified reasonable legal notices or) N
+(    author attributions in that material or in the Appropriate Legal) N
+(    Notices displayed by works containing it; or) N
+() N
+(    c\) Prohibiting misrepresentation of the origin of that material, or) N
+(    requiring that modified versions of such material be marked in) N
+(    reasonable ways as different from the original version; or) N
+() N
+(    d\) Limiting the use for publicity purposes of names of licensors or) N
+(    authors of the material; or) N
+() N
+(    e\) Declining to grant rights under trademark law for use of some) N
+(    trade names, trademarks, or service marks; or) N
+() N
+(    f\) Requiring indemnification of licensors and authors of that) N
+(    material by anyone who conveys the material \(or modified versions of) N
+(    it\) with contractual assumptions of liability to the recipient, for) N
+(    any liability that these contractual assumptions directly impose on) N
+(    those licensors and authors.) N
+() N
+(  All other non-permissive additional terms are considered "further) N
+(restrictions" within the meaning of section 10.  If the Program as you) N
+(received it, or any part of it, contains a notice stating that it is) N
+(governed by this License along with a term that is a further) N
+(restriction, you may remove that term.  If a license document contains) N
+(a further restriction but permits relicensing or conveying under this) N
+(License, you may add to a covered work material governed by the terms) N
+(of that license document, provided that the further restriction does) N
+(not survive such relicensing or conveying.) N
+() N
+(  If you add terms to a covered work in accord with this section, you) N
+(must place, in the relevant source files, a statement of the) N
+(additional terms that apply to those files, or a notice indicating) N
+(where to find the applicable terms.) N
+() N
+(  Additional terms, permissive or non-permissive, may be stated in the) N
+(form of a separately written license, or stated as exceptions;) N
+(the above requirements apply either way.) N
+() N
+(  8. Termination.) N
+() N
+(  You may not propagate or modify a covered work except as expressly) N
+(provided under this License.  Any attempt otherwise to propagate or) N
+(modify it is void, and will automatically terminate your rights under) N
+(this License \(including any patent licenses granted under the third) N
+(paragraph of section 11\).) N
+(COPYING) (Page 7/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (7/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (8) 8
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(  However, if you cease all violation of this License, then your) N
+(license from a particular copyright holder is reinstated \(a\)) N
+(provisionally, unless and until the copyright holder explicitly and) N
+(finally terminates your license, and \(b\) permanently, if the copyright) N
+(holder fails to notify you of the violation by some reasonable means) N
+(prior to 60 days after the cessation.) N
+() N
+(  Moreover, your license from a particular copyright holder is) N
+(reinstated permanently if the copyright holder notifies you of the) N
+(violation by some reasonable means, this is the first time you have) N
+(received notice of violation of this License \(for any work\) from that) N
+(copyright holder, and you cure the violation prior to 30 days after) N
+(your receipt of the notice.) N
+() N
+(  Termination of your rights under this section does not terminate the) N
+(licenses of parties who have received copies or rights from you under) N
+(this License.  If your rights have been terminated and not permanently) N
+(reinstated, you do not qualify to receive new licenses for the same) N
+(material under section 10.) N
+() N
+(  9. Acceptance Not Required for Having Copies.) N
+() N
+(  You are not required to accept this License in order to receive or) N
+(run a copy of the Program.  Ancillary propagation of a covered work) N
+(occurring solely as a consequence of using peer-to-peer transmission) N
+(to receive a copy likewise does not require acceptance.  However,) N
+(nothing other than this License grants you permission to propagate or) N
+(modify any covered work.  These actions infringe copyright if you do) N
+(not accept this License.  Therefore, by modifying or propagating a) N
+(covered work, you indicate your acceptance of this License to do so.) N
+() N
+(  10. Automatic Licensing of Downstream Recipients.) N
+() N
+(  Each time you convey a covered work, the recipient automatically) N
+(receives a license from the original licensors, to run, modify and) N
+(propagate that work, subject to this License.  You are not responsible) N
+(for enforcing compliance by third parties with this License.) N
+() N
+(  An "entity transaction" is a transaction transferring control of an) N
+(organization, or substantially all assets of one, or subdividing an) N
+(organization, or merging organizations.  If propagation of a covered) N
+(work results from an entity transaction, each party to that) N
+(transaction who receives a copy of the work also receives whatever) N
+(licenses to the work the party's predecessor in interest had or could) N
+(give under the previous paragraph, plus a right to possession of the) N
+(Corresponding Source of the work from the predecessor in interest, if) N
+(the predecessor has it or can get it with reasonable efforts.) N
+() N
+(  You may not impose any further restrictions on the exercise of the) N
+(rights granted or affirmed under this License.  For example, you may) N
+(not impose a license fee, royalty, or other charge for exercise of) N
+(rights granted under this License, and you may not initiate litigation) N
+(\(including a cross-claim or counterclaim in a lawsuit\) alleging that) N
+(any patent claim is infringed by making, using, selling, offering for) N
+(sale, or importing the Program or any portion of it.) N
+() N
+(  11. Patents.) N
+() N
+(COPYING) (Page 8/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (8/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (9) 9
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(  A "contributor" is a copyright holder who authorizes use under this) p n
+(License of the Program or a work on which the Program is based.  The) N
+(work thus licensed is called the contributor's "contributor version".) N
+() N
+(  A contributor's "essential patent claims" are all patent claims) N
+(owned or controlled by the contributor, whether already acquired or) N
+(hereafter acquired, that would be infringed by some manner, permitted) N
+(by this License, of making, using, or selling its contributor version,) N
+(but do not include claims that would be infringed only as a) N
+(consequence of further modification of the contributor version.  For) N
+(purposes of this definition, "control" includes the right to grant) N
+(patent sublicenses in a manner consistent with the requirements of) N
+(this License.) N
+() N
+(  Each contributor grants you a non-exclusive, worldwide, royalty-free) N
+(patent license under the contributor's essential patent claims, to) N
+(make, use, sell, offer for sale, import and otherwise run, modify and) N
+(propagate the contents of its contributor version.) N
+() N
+(  In the following three paragraphs, a "patent license" is any express) N
+(agreement or commitment, however denominated, not to enforce a patent) N
+(\(such as an express permission to practice a patent or covenant not to) N
+(sue for patent infringement\).  To "grant" such a patent license to a) N
+(party means to make such an agreement or commitment not to enforce a) N
+(patent against the party.) N
+() N
+(  If you convey a covered work, knowingly relying on a patent license,) N
+(and the Corresponding Source of the work is not available for anyone) N
+(to copy, free of charge and under the terms of this License, through a) N
+(publicly available network server or other readily accessible means,) N
+(then you must either \(1\) cause the Corresponding Source to be so) N
+(available, or \(2\) arrange to deprive yourself of the benefit of the) N
+(patent license for this particular work, or \(3\) arrange, in a manner) N
+(consistent with the requirements of this License, to extend the patent) N
+(license to downstream recipients.  "Knowingly relying" means you have) N
+(actual knowledge that, but for the patent license, your conveying the) N
+(covered work in a country, or your recipient's use of the covered work) N
+(in a country, would infringe one or more identifiable patents in that) N
+(country that you have reason to believe are valid.) N
+() N
+(  If, pursuant to or in connection with a single transaction or) N
+(arrangement, you convey, or propagate by procuring conveyance of, a) N
+(covered work, and grant a patent license to some of the parties) N
+(receiving the covered work authorizing them to use, propagate, modify) N
+(or convey a specific copy of the covered work, then the patent license) N
+(you grant is automatically extended to all recipients of the covered) N
+(work and works based on it.) N
+() N
+(  A patent license is "discriminatory" if it does not include within) N
+(the scope of its coverage, prohibits the exercise of, or is) N
+(conditioned on the non-exercise of one or more of the rights that are) N
+(specifically granted under this License.  You may not convey a covered) N
+(work if you are a party to an arrangement with a third party that is) N
+(in the business of distributing software, under which you make payment) N
+(to the third party based on the extent of your activity of conveying) N
+(the work, and under which the third party grants, to any of the) N
+(parties who would receive the covered work from you, a discriminatory) N
+(patent license \(a\) in connection with copies of the covered work) N
+(conveyed by you \(or copies made from those copies\), or \(b\) primarily) N
+(COPYING) (Page 9/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (9/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (10) 10
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(for and in connection with specific products or compilations that) p n
+(contain the covered work, unless you entered into that arrangement,) N
+(or that patent license was granted, prior to 28 March 2007.) N
+() N
+(  Nothing in this License shall be construed as excluding or limiting) N
+(any implied license or other defenses to infringement that may) N
+(otherwise be available to you under applicable patent law.) N
+() N
+(  12. No Surrender of Others' Freedom.) N
+() N
+(  If conditions are imposed on you \(whether by court order, agreement or) N
+(otherwise\) that contradict the conditions of this License, they do not) N
+(excuse you from the conditions of this License.  If you cannot convey a) N
+(covered work so as to satisfy simultaneously your obligations under this) N
+(License and any other pertinent obligations, then as a consequence you may) N
+(not convey it at all.  For example, if you agree to terms that obligate you) N
+(to collect a royalty for further conveying from those to whom you convey) N
+(the Program, the only way you could satisfy both those terms and this) N
+(License would be to refrain entirely from conveying the Program.) N
+() N
+(  13. Use with the GNU Affero General Public License.) N
+() N
+(  Notwithstanding any other provision of this License, you have) N
+(permission to link or combine any covered work with a work licensed) N
+(under version 3 of the GNU Affero General Public License into a single) N
+(combined work, and to convey the resulting work.  The terms of this) N
+(License will continue to apply to the part which is the covered work,) N
+(but the special requirements of the GNU Affero General Public License,) N
+(section 13, concerning interaction through a network will apply to the) N
+(combination as such.) N
+() N
+(  14. Revised Versions of this License.) N
+() N
+(  The Free Software Foundation may publish revised and/or new versions of) N
+(the GNU General Public License from time to time.  Such new versions will) N
+(be similar in spirit to the present version, but may differ in detail to) N
+(address new problems or concerns.) N
+() N
+(  Each version is given a distinguishing version number.  If the) N
+(Program specifies that a certain numbered version of the GNU General) N
+(Public License "or any later version" applies to it, you have the) N
+(option of following the terms and conditions either of that numbered) N
+(version or of any later version published by the Free Software) N
+(Foundation.  If the Program does not specify a version number of the) N
+(GNU General Public License, you may choose any version ever published) N
+(by the Free Software Foundation.) N
+() N
+(  If the Program specifies that a proxy can decide which future) N
+(versions of the GNU General Public License can be used, that proxy's) N
+(public statement of acceptance of a version permanently authorizes you) N
+(to choose that version for the Program.) N
+() N
+(  Later license versions may give you additional or different) N
+(permissions.  However, no additional obligations are imposed on any) N
+(author or copyright holder as a result of your choosing to follow a) N
+(later version.) N
+() N
+(  15. Disclaimer of Warranty.) N
+() N
+(COPYING) (Page 10/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (10/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (11) 11
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(  THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY) p n
+(APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT) N
+(HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY) N
+(OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,) N
+(THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR) N
+(PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM) N
+(IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF) N
+(ALL NECESSARY SERVICING, REPAIR OR CORRECTION.) N
+() N
+(  16. Limitation of Liability.) N
+() N
+(  IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING) N
+(WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS) N
+(THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY) N
+(GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE) N
+(USE OR INABILITY TO USE THE PROGRAM \(INCLUDING BUT NOT LIMITED TO LOSS OF) N
+(DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD) N
+(PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS\),) N
+(EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF) N
+(SUCH DAMAGES.) N
+() N
+(  17. Interpretation of Sections 15 and 16.) N
+() N
+(  If the disclaimer of warranty and limitation of liability provided) N
+(above cannot be given local legal effect according to their terms,) N
+(reviewing courts shall apply local law that most closely approximates) N
+(an absolute waiver of all civil liability in connection with the) N
+(Program, unless a warranty or assumption of liability accompanies a) N
+(copy of the Program in return for a fee.) N
+() N
+(                     END OF TERMS AND CONDITIONS) N
+() N
+(            How to Apply These Terms to Your New Programs) N
+() N
+(  If you develop a new program, and you want it to be of the greatest) N
+(possible use to the public, the best way to achieve this is to make it) N
+(free software which everyone can redistribute and change under these terms.) N
+() N
+(  To do so, attach the following notices to the program.  It is safest) N
+(to attach them to the start of each source file to most effectively) N
+(state the exclusion of warranty; and each file should have at least) N
+(the "copyright" line and a pointer to where the full notice is found.) N
+() N
+(    <one line to give the program's name and a brief idea of what it does.>) N
+(    Copyright \(C\) <year>  <name of author>) N
+() N
+(    This program is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    This program is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with this program.  If not, see <http://www.gnu.org/licenses/>.) N
+() N
+(COPYING) (Page 11/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (11/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (12) 12
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(Also add information on how to contact you by electronic and paper mail.) p n
+() N
+(  If the program does terminal interaction, make it output a short) N
+(notice like this when it starts in an interactive mode:) N
+() N
+(    <program>  Copyright \(C\) <year>  <name of author>) N
+(    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.) N
+(    This is free software, and you are welcome to redistribute it) N
+(    under certain conditions; type `show c' for details.) N
+() N
+(The hypothetical commands `show w' and `show c' should show the appropriate) N
+(parts of the General Public License.  Of course, your program's commands) N
+(might be different; for a GUI interface, you would use an "about box".) N
+() N
+(  You should also get your employer \(if you work as a programmer\) or school,) N
+(if any, to sign a "copyright disclaimer" for the program, if necessary.) N
+(For more information on this, and how to apply and follow the GNU GPL, see) N
+(<http://www.gnu.org/licenses/>.) N
+() N
+(  The GNU General Public License does not permit incorporating your program) N
+(into proprietary programs.  If your program is a subroutine library, you) N
+(may consider it more useful to permit linking proprietary applications with) N
+(the library.  If this is what you want to do, use the GNU Lesser General) N
+(Public License instead of this License.  But first, please read) N
+(<http://www.gnu.org/philosophy/why-not-lgpl.html>.) S
+(COPYING) (Page 12/12) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (12/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 13
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(<?xml version="1.0" encoding="UTF-8"?>) p n
+(<!--) N
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(    -->) N
+(<project name="" xmlns:ivy="antlib:org.apache.ivy.ant" basedir=".">) N
+(  <target name="init" description="Install ivy">) N
+(    <property name="major" value="2"/>) N
+(    <property name="minor" value="4"/>) N
+(    <property name="patch" value="0"/>) N
+(    <mkdir dir="build"/>) N
+(    <get dest="build/ivy-${major}.${minor}.${patch}.jar" src="https://repo1.mave) N
+(n.org/maven2/org/apache/ivy/ivy/${major}.${minor}.${patch}/ivy-${major}.${minor}) N
+(.${patch}.jar" skipexisting="true"/>) N
+(    <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy) N
+(.ant">) N
+(      <classpath>) N
+() S 8 T (<fileset dir="build" includes="ivy-${major}.${minor}.${patch}.jar"/>) N
+(      </classpath>) N
+(    </taskdef>) N
+(    <property name="repository" location="build/repository"/>) N
+(    <mkdir dir="${repository}"/>) N
+(    <ivy:configure file="${basedir}/src/ivy/ivysettings.xml"/>) N
+(  </target>) N
+(  <target name="clean">) N
+(    <delete dir="build"/>) N
+(  </target>) N
+(  <target name="checkstyle" depends="init" xmlns:cs="antlib:com.puppycrawl.tools) N
+(.checkstyle.ant">) N
+(    <ivy:resolve>) N
+(      <dependency org="com.puppycrawl.tools" name="checkstyle" rev="6.10.1"/>) N
+(    </ivy:resolve>) N
+(    <mkdir dir="${basedir}/build/checkstyle"/>) N
+(    <ivy:retrieve pattern="${basedir}/build/checkstyle/[artifact]-[conf]-[type]-) N
+([revision].[ext]"/>) N
+(    <taskdef resource="com/puppycrawl/tools/checkstyle/ant/checkstyle-ant-task.p) N
+(roperties" uri="antlib:com.puppycrawl.tools.checkstyle.ant">) N
+(      <classpath>) N
+() S 8 T (<fileset dir="${basedir}/build/checkstyle"/>) N
+(      </classpath>) N
+(    </taskdef>) N
+(    <cs:checkstyle config="${basedir}/src/checkstyle/checks.xml">) N
+(      <fileset dir="${basedir}/src/java" includes="**/*.java"/>) N
+(build.xml) (Page 1/2) (Oct 29, 15 8:23) title
+border
+grestore
+(Printed by vagrant) rhead
+() (13/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 14
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(      <property key="checkstyle.header.file" value="${basedir}/src/checkstyle/he) p n
+(ader.txt"/>) N
+(    </cs:checkstyle>) N
+(  </target>) N
+(  <target name="javadoc" depends="init">) N
+(    <mkdir dir="${basedir}/build/javadoc"/>) N
+(    <javadoc linksource="yes" destdir="${basedir}/build/javadoc">) N
+(      <fileset dir="${basedir}/src/java"/>) N
+(    </javadoc>) N
+(    <mkdir dir="${basedir}/build/artifacts"/>) N
+(    <jar basedir="${basedir}/build/javadoc" destfile="${basedir}/build/artifacts) N
+(/javadoc.jar" compress="yes" level="9"/>) N
+(  </target>) N
+(  <target name="print" depends="init">) N
+(    <mkdir dir="${basedir}/build/artifacts"/>) N
+(    <fileset dir="${basedir}" id="src1">) N
+(      <include name="COPYING"/>) N
+(      <include name="build.xml"/>) N
+(      <include name="src/**/*"/>) N
+(    </fileset>) N
+(    <pathconvert refid="src1" pathsep=" " property="src2"/>) N
+(    <exec executable="a2ps">) N
+(      <arg value="-1"/>) N
+(      <arg value="--toc"/>) N
+(      <arg line="-o build/artifacts/print.ps"/>) N
+(      <arg line="${src2}"/>) N
+(    </exec>) N
+(  </target>) N
+(  <target name="compile">) N
+(    <mkdir dir="${basedir}/build/compile"/>) N
+(    <javac srcdir="${basedir}/src/java" destdir="${basedir}/build/compile"/>) N
+(    <mkdir dir="${basedir}/build/artifacts"/>) N
+(    <jar basedir="${basedir}/build/compile" destfile="${basedir}/build/artifacts) N
+(/jar.jar" compress="yes" level="9"/>) N
+(  </target>) N
+(  <target name="source">) N
+(    <mkdir dir="${basedir}/build/artifacts"/>) N
+(    <jar basedir="${basedir}/src/java" destfile="${basedir}/build/artifacts/src.) N
+(jar" compress="yes" level="9"/>) N
+(  </target>) N
+(  <target name="publish" depends="clean,init,checkstyle,javadoc,print,compile,so) N
+(urce">) N
+(    <mkdir dir="${basedir}/build"/>) N
+(    <exec executable="src/bin/revision.sh" outputproperty="pubrevision">) N
+(      <arg value="1"/>) N
+(      <arg value="2"/>) N
+(    </exec>) N
+(    <mkdir dir="${basedir}/build/repository"/>) N
+(    <ivy:resolve file="${basedir}/src/ivy/ivy.xml"/>) N
+(    <ivy:publish resolver="public" pubrevision="${pubrevision}" status="release") N
+( update="yes">) N
+(      <artifacts pattern="${basedir}/build/artifacts/[type].[ext]"/>) N
+(    </ivy:publish>) N
+(  </target>) N
+(</project>) N
+(build.xml) (Page 2/2) (Oct 29, 15 8:23) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (14/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 15
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#!/bin/bash) c n
+(#) N
+(#    Copyright \(C\) 2015) N
+(#    Emory Merryman) N
+(#    emory.merryman@gmail.com) N
+(#) N
+(#    This file is part of tidyrailroad.) N
+(#) N
+(#    tidyrailroad is free software: you can redistribute it and/or modify) N
+(#    it under the terms of the GNU General Public License as published by) N
+(#    the Free Software Foundation, either version 3 of the License, or) N
+(#    \(at your option\) any later version.) N
+(#) N
+(#    tidyrailroad is distributed in the hope that it will be useful,) N
+(#    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(#    GNU General Public License for more details.) N
+(#) N
+(#    You should have received a copy of the GNU General Public License) N
+(#    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(#    ) N
+(MAJOR=${1} &&) p n
+(    MINOR=${2} &&) N
+(    git describe --long --tag --dirty --always | grep ") S
+(v${MAJOR}.${MINOR}) str
+(" | sed) p n
+( -e ") S
+(s#v${MAJOR}.${MINOR}-\\\([0-9]*\\\)-.*#${MAJOR}.${MINOR}.\\1#) str
+(") p n
+(revision.sh) (Page 1/1) (Oct 29, 15 6:47) title
+border
+grestore
+(Printed by vagrant) rhead
+() (15/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 16
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(<?xml version="1.0"?>) p n
+(<!DOCTYPE module PUBLIC) N
+(          "-//Puppy Crawl//DTD Check Configuration 1.3//EN") N
+(          "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">) N
+() S 8 T (  <!--) N
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+() S 8 T (  -->) N
+(<!--) N
+() N
+(  Checkstyle configuration that checks the sun coding conventions from:) N
+() N
+(    - the Java Language Specification at) N
+(      http://java.sun.com/docs/books/jls/second_edition/html/index.html) N
+() N
+(    - the Sun Code Conventions at http://java.sun.com/docs/codeconv/) N
+() N
+(    - the Javadoc guidelines at) N
+(      http://java.sun.com/j2se/javadoc/writingdoccomments/index.html) N
+() N
+(    - the JDK Api documentation http://java.sun.com/j2se/docs/api/index.html) N
+() N
+(    - some best practices) N
+() N
+(  Checkstyle is very configurable. Be sure to read the documentation at) N
+(  http://checkstyle.sf.net \(or in your downloaded distribution\).) N
+() N
+(  Most Checks are configurable, be sure to consult the documentation.) N
+() N
+(  To completely disable a check, just comment it out or delete it from the file.) N
+() N
+(  Finally, it is worth reading the documentation.) N
+() N
+(-->) N
+() N
+(<module name="Checker">) N
+(    <!--) N
+(        If you set the basedir property below, then all reported file) N
+(        names will be relative to the specified directory. See) N
+(        http://checkstyle.sourceforge.net/5.x/config.html#Checker) N
+() N
+(        <property name="basedir" value="${basedir}"/>) N
+(    -->) N
+(checks.xml) (Page 1/4) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (16/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 17
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(    <property name="fileExtensions" value="java, properties, xml"/>) N
+() N
+(    <!-- Checks that a package-info.java file exists for each package.     -->) N
+(    <!-- See http://checkstyle.sf.net/config_javadoc.html#JavadocPackage -->) N
+(    <module name="JavadocPackage"/>) N
+() N
+(    <!-- Checks whether files end with a new line.                        -->) N
+(    <!-- See http://checkstyle.sf.net/config_misc.html#NewlineAtEndOfFile -->) N
+(    <module name="NewlineAtEndOfFile"/>) N
+() N
+(    <!-- Checks that property files contain the same keys.         -->) N
+(    <!-- See http://checkstyle.sf.net/config_misc.html#Translation -->) N
+(    <module name="Translation"/>) N
+() N
+(    <!-- Checks for Size Violations.                    -->) N
+(    <!-- See http://checkstyle.sf.net/config_sizes.html -->) N
+(    <module name="FileLength"/>) N
+() N
+(    <!-- Checks for whitespace                               -->) N
+(    <!-- See http://checkstyle.sf.net/config_whitespace.html -->) N
+(    <module name="FileTabCharacter"/>) N
+() N
+(    <!-- Miscellaneous other checks.                   -->) N
+(    <!-- See http://checkstyle.sf.net/config_misc.html -->) N
+(    <module name="RegexpSingleline">) N
+(       <property name="format" value="\\s+$"/>) N
+(       <property name="minimum" value="0"/>) N
+(       <property name="maximum" value="0"/>) N
+(       <property name="message" value="Line has trailing spaces."/>) N
+(    </module>) N
+() N
+(    <!-- Checks for Headers                                -->) N
+(    <!-- See http://checkstyle.sf.net/config_header.html   -->) N
+(    <module name="Header">) N
+(      <property name="headerFile" value="${checkstyle.header.file}"/>) N
+(      <property name="fileExtensions" value="java"/>) N
+(    </module>) N
+() N
+(    <module name="TreeWalker">) N
+() N
+(        <!-- Checks for Javadoc comments.                     -->) N
+(        <!-- See http://checkstyle.sf.net/config_javadoc.html -->) N
+(        <module name="JavadocMethod"/>) N
+(        <module name="JavadocType"/>) N
+(        <module name="JavadocVariable"/>) N
+(        <module name="JavadocStyle"/>) N
+() N
+(        <!-- Checks for Naming Conventions.                  -->) N
+(        <!-- See http://checkstyle.sf.net/config_naming.html -->) N
+(        <module name="ConstantName"/>) N
+(        <module name="LocalFinalVariableName"/>) N
+(        <module name="LocalVariableName"/>) N
+(        <module name="MemberName"/>) N
+(        <module name="MethodName"/>) N
+(        <module name="PackageName"/>) N
+(        <module name="ParameterName"/>) N
+(        <module name="StaticVariableName"/>) N
+(        <module name="TypeName"/>) N
+(checks.xml) (Page 2/4) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (17/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 18
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(        <!-- Checks for imports                              -->) N
+(        <!-- See http://checkstyle.sf.net/config_import.html -->) N
+(        <module name="AvoidStarImport"/>) N
+(        <module name="IllegalImport"/> <!-- defaults to sun.* packages -->) N
+(        <module name="RedundantImport"/>) N
+(        <module name="UnusedImports"/>) N
+() N
+(        <!-- Checks for Size Violations.                    -->) N
+(        <!-- See http://checkstyle.sf.net/config_sizes.html -->) N
+(        <module name="LineLength"/>) N
+(        <module name="MethodLength"/>) N
+(        <module name="ParameterNumber"/>) N
+() N
+(        <!-- Checks for whitespace                               -->) N
+(        <!-- See http://checkstyle.sf.net/config_whitespace.html -->) N
+(        <module name="EmptyForIteratorPad"/>) N
+(        <module name="GenericWhitespace"/>) N
+(        <module name="MethodParamPad"/>) N
+(        <module name="NoWhitespaceAfter"/>) N
+(        <module name="NoWhitespaceBefore"/>) N
+(        <module name="OperatorWrap"/>) N
+(        <module name="ParenPad"/>) N
+(        <module name="TypecastParenPad"/>) N
+(        <module name="WhitespaceAfter"/>) N
+(        <module name="WhitespaceAround"/>) N
+() N
+(        <!-- Modifier Checks                                    -->) N
+(        <!-- See http://checkstyle.sf.net/config_modifiers.html -->) N
+(        <module name="ModifierOrder"/>) N
+(        <module name="RedundantModifier"/>) N
+() N
+(        <!-- Checks for blocks. You know, those {}'s         -->) N
+(        <!-- See http://checkstyle.sf.net/config_blocks.html -->) N
+(        <module name="AvoidNestedBlocks"/>) N
+(        <module name="EmptyBlock"/>) N
+(        <module name="LeftCurly"/>) N
+(        <module name="NeedBraces"/>) N
+(        <module name="RightCurly"/>) N
+() N
+(        <!-- Checks for common coding problems               -->) N
+(        <!-- See http://checkstyle.sf.net/config_coding.html -->) N
+(        <module name="AvoidInlineConditionals"/>) N
+(        <module name="EmptyStatement"/>) N
+(        <module name="EqualsHashCode"/>) N
+(        <module name="HiddenField"/>) N
+(        <module name="IllegalInstantiation"/>) N
+(        <module name="InnerAssignment"/>) N
+(        <module name="MagicNumber"/>) N
+(        <module name="MissingSwitchDefault"/>) N
+(        <module name="SimplifyBooleanExpression"/>) N
+(        <module name="SimplifyBooleanReturn"/>) N
+() N
+(        <!-- Checks for class design                         -->) N
+(        <!-- See http://checkstyle.sf.net/config_design.html -->) N
+(        <module name="DesignForExtension"/>) N
+(        <module name="FinalClass"/>) N
+(        <module name="HideUtilityClassConstructor"/>) N
+(        <module name="InterfaceIsType"/>) N
+(checks.xml) (Page 3/4) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (18/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (4) 19
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        <module name="VisibilityModifier"/>) p n
+() N
+(        <!-- Miscellaneous other checks.                   -->) N
+(        <!-- See http://checkstyle.sf.net/config_misc.html -->) N
+(        <module name="ArrayTypeStyle"/>) N
+(        <module name="FinalParameters"/>) N
+(        <module name="TodoComment"/>) N
+(        <module name="UpperEll"/>) N
+() N
+(    </module>) N
+() N
+(</module>) N
+(checks.xml) (Page 4/4) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (19/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 20
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) p n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(header.txt) (Page 1/1) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (20/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 21
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(<?xml version="1.0" encoding="UTF-8"?>) p n
+(<!--) N
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(    -->) N
+(<ivy-module version="2.0">) N
+(  <info organisation="com.merrymanheavyindustries.tidyrailroad" module="annotati) N
+(ons"/>) N
+(  <configurations>) N
+(    <conf name="runtime" description="run-time dependencies" visibility="public") N
+(/>) N
+(    <conf name="documentation" description="documentation" visibility="public"/>) N
+(  </configurations>) N
+(  <publications>) N
+(    <artifact name="tidyrailroad" type="javadoc" ext="jar" conf="documentation"/) N
+(>) N
+(    <artifact name="tidyrailroad" type="print" ext="ps" conf="documentation"/>) N
+(    <artifact name="tidyrailroad" type="jar" ext="jar" conf="runtime"/>) N
+(    <artifact name="tidyrailroad" type="src" ext="jar" conf="documentation"/>) N
+(  </publications>) N
+(</ivy-module>) N
+(ivy.xml) (Page 1/1) (Oct 29, 15 8:26) title
+border
+grestore
+(Printed by vagrant) rhead
+() (21/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 22
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(<?xml version="1.0" encoding="UTF-8"?>) p n
+(<!--) N
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(-->) N
+(<ivysettings>) N
+(  <settings defaultResolver="central"/>) N
+(  <resolvers>) N
+(    <ibiblio name="central" m2compatible="true"/>) N
+(    <filesystem name="public">) N
+(      <ivy pattern="${repository}/[organization]/[module]/ivy-[revision].xml" />) N
+(      <artifact pattern="${repository}/[organization]/[module]/[conf]/[artifact]) N
+(-[type]-[revision].[ext]" />) N
+(    </filesystem>) N
+(  </resolvers>) N
+(  <modules>) N
+(    <module organisation="com.merrymanheavyindustries.tidyrailroad" name=".*" re) N
+(solver="public"/>) N
+(  </modules>) N
+(</ivysettings>) N
+(ivysettings.xml) (Page 1/1) (Oct 29, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (22/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 23
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+() p n
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.TYPE;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.RUNTIME;) p n
+() N
+(/**) C n
+( * Provides class level configuration.) N
+( **/) N
+(@Documented) p n
+(@Target\(TYPE\)) N
+(@Retention\(RUNTIME\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(Implementation) L
+( {) p n
+(    ) S
+(/**) C n
+(     * Specifies how to handle an unannotated concrete method.) N
+(     **/) N
+(    UnannotatedConcreteMethod) p n
+(        unannotatedConcreteMethod\(\)) N
+(default) K
+( UnannotatedConcreteMethod.PROCEED;) p n
+() N
+(    ) S
+(/**) C n
+(     * This specifies how to handle an unannotated abstract method.) N
+(     **/) N
+(    UnannotatedAbstractMethod) p n
+(        unannotatedAbstractMethod\(\)) N
+(default) K
+( UnannotatedAbstractMethod.CLASS;) p n
+(}) N
+(Implementation.java) (Page 1/1) (Oct 29, 15 7:47) title
+border
+grestore
+(Printed by vagrant) rhead
+() (23/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 24
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+() p n
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(/**) C n
+( * This enum can be used to describe what to do when) N
+( * processing an unannotated abstract method.) N
+( *) N
+( * The only difference between this and) N
+( * @{see UannatotaedConcreteMethod} is) N
+( * is PROCEED.) N
+( **/) N
+(public) K
+( enum UnannotatedAbstractMethod {) p n
+(    ) S
+(/**) C n
+(     * {@see UseCast}.) N
+(     **/) N
+(    CAST,) p n
+(    ) S
+(/**) C n
+(     * {@see UseClass}.) N
+(     **/) N
+(    CLASS,) p n
+(    ) S
+(/**) C n
+(     * {@see UseInstanceMethod}.) N
+(     **/) N
+(    INSTANCE_METHOD,) p n
+(    ) S
+(/**) C n
+(     * {@see UseNull}.) N
+(     **/) N
+(    NULL,) p n
+(    ) S
+(/**) C n
+(     * {@see UseParameter}.) N
+(     **/) N
+(    PARAMETER,) p n
+(    ) S
+(/**) C n
+(     * {@see UseProperty}.) N
+(     **/) N
+(    PROPERTY,) p n
+(    ) S
+(/**) C n
+(     * {@see UseUnsupportedOperationException}.) N
+(     **/) N
+(UnannotatedAbstractMethod.java) (Page 1/2) (Oct 29, 15 7:44) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (24/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 25
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    UNSUPPORTED_OPERATION_EXCEPTION;) p n
+(}) N
+(UnannotatedAbstractMethod.java) (Page 2/2) (Oct 29, 15 7:44) title
+border
+grestore
+(Printed by vagrant) rhead
+() (25/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 26
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+() p n
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(/**) C n
+( * This enum can be used to describe what to do when) N
+( * processing an unannotated concrete method.) N
+( *) N
+( * The only difference between this and) N
+( * @{see UannatotaedAbstractMethod} is) N
+( * is PROCEED.) N
+( **/) N
+(public) K
+( enum UnannotatedConcreteMethod {) p n
+(    ) S
+(/**) C n
+(     * Just use the method.) N
+(     * It already has an implementation.) N
+(     **/) N
+(    PROCEED,) p n
+(    ) S
+(/**) C n
+(     * {@see UseCast}.) N
+(     **/) N
+(    CAST,) p n
+(    ) S
+(/**) C n
+(     * {@see UseClass}.) N
+(     **/) N
+(    CLASS,) p n
+(    ) S
+(/**) C n
+(     * {@see UseInstanceMethod}.) N
+(     **/) N
+(    INSTANCE_METHOD,) p n
+(    ) S
+(/**) C n
+(     * {@see UseNull}.) N
+(     **/) N
+(    NULL,) p n
+(    ) S
+(/**) C n
+(     * {@see UseParameter}.) N
+(     **/) N
+(    PARAMETER,) p n
+(    ) S
+(/**) C n
+(     * {@see UseProperty}.) N
+(UnannotatedConcreteMethod.java) (Page 1/2) (Oct 29, 15 7:44) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (26/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 27
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     **/) C n
+(    PROPERTY,) p n
+(    ) S
+(/**) C n
+(     * {@see UseUnsupportedOperationException}.) N
+(     **/) N
+(    UNSUPPORTED_OPERATION_EXCEPTION;) p n
+(}) N
+(UnannotatedConcreteMethod.java) (Page 2/2) (Oct 29, 15 7:44) title
+border
+grestore
+(Printed by vagrant) rhead
+() (27/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 28
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.METHOD;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.SOURCE;) p n
+() N
+(/**) C n
+( * The tidyrailroad dependency injection framework should) N
+( * use a cast to satisfy this dependency.) N
+( *) N
+( * Instead of) N
+( * <PRE>) N
+( * String x = \(String\)\(object\);) N
+( * </PRE>) N
+( *) N
+( * use) N
+( * <PRE>) N
+( * String x = string\(object\);) N
+( * </PRE>) N
+( *) N
+( * where) N
+( * <PRE>) N
+( * @UseCast) N
+( * abstract String string\(Object val\);) N
+( * </PRE>) N
+( **/) N
+(@Documented) p n
+(@Retention\(SOURCE\)) N
+(@Target\(METHOD\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(UseCast) L
+( {) p n
+(}) N
+(UseCast.java) (Page 1/1) (Oct 29, 15 7:38) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (28/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 29
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.METHOD;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.SOURCE;) p n
+() N
+(/**) C n
+( * The tidyrailroad dependency injection framework should) N
+( * use a constructor to satisfy this dependency.) N
+( * But unlike @see UseConstructor it should figure out) N
+( * which class to use based on the dependency return type) N
+( * rather than you having to specify it.) N
+( *) N
+( * Instead of) N
+( * <PRE>) N
+( * String x = new String \( "Hello World"\) ;) N
+( * </PRE>) N
+( *) N
+( * use) N
+( * <PRE>) N
+( * String x = newString\( "Hello World"\);) N
+( * </PRE>) N
+( *) N
+( * where) N
+( * <PRE>) N
+( * @UseClass) N
+( * abstract String newString\(String val\);) N
+( * </PRE>) N
+( **/) N
+(@Documented) p n
+(@Retention\(SOURCE\)) N
+(@Target\(METHOD\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(UseClass) L
+( {) p n
+(}) N
+(UseClass.java) (Page 1/1) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (29/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 30
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.METHOD;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.SOURCE;) p n
+() N
+(/**) C n
+( * The tidyrailroad dependency injection framework should) N
+( * use a constructor to satisfy this dependency.) N
+( *) N
+( * Instead of) N
+( * <PRE>) N
+( * String x = new String \( "Hello World"\) ;) N
+( * </PRE>) N
+( *) N
+( * use) N
+( * <PRE>) N
+( * String x = newString\( "Hello World"\);) N
+( * </PRE>) N
+( *) N
+( * where) N
+( * <PRE>) N
+( * @UseConstructor\(String.class\)) N
+( * abstract String newString\(String val\);) N
+( * </PRE>) N
+( **/) N
+(@Documented) p n
+(@Retention\(SOURCE\)) N
+(@Target\(METHOD\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(UseConstructor) L
+( {) p n
+(    ) S
+(/**) C n
+(     * Specifies the constructor to use.) N
+(     *) N
+(     * The specified class is either) N
+(     * <OL>) N
+(     *     <LI> final, or) N
+(     *     </LI> not final) N
+(UseConstructor.java) (Page 1/2) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (30/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 31
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     * </OL>) C n
+(     *) N
+(     * If it is final, then it should have a constructor that) N
+(     * matches the dependency on parameters.) N
+(     *) N
+(     * If it is not final, then it should have a constructor) N
+(     * that when augmented with parameters) N
+(     * {@link UseParameter}) N
+(     * matches the dependency on parameters) N
+(     **/) N
+(    Class<?> value\(\);) p n
+(}) N
+(UseConstructor.java) (Page 2/2) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (31/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 32
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.METHOD;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.SOURCE;) p n
+() N
+(/**) C n
+( * Uses a method of the instance to satisfy the dependency.) N
+( *) N
+( * instead of) N
+( * <PRE>) N
+( * String x = "Hello World";) N
+( * System.out.println\(x.toString\(\)\);) N
+( * </PRE>) N
+( *) N
+( * do) N
+( * <PRE>) N
+( * String x = "Hello World";) N
+( * System.out.println\(toString\(x\)\);) N
+( * </PRE>) N
+( *) N
+( * where) N
+( * <PRE>) N
+( * @UseInstanceMethod) N
+( * abstract String toString\(String val\);) N
+( * </PRE>) N
+( *) N
+( * This may seem silly, but it facilitates unit testing.) N
+( *) N
+( * String.toString is final and cannot be mocked \(easily\).) N
+( * OurClass.toString\(String\) is abstract and can easily be mocked.) N
+( **/) N
+(@Documented) p n
+(@Retention\(SOURCE\)) N
+(@Target\(METHOD\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(UseInstanceMethod) L
+( {) p n
+(}) N
+(UseInstanceMethod.java) (Page 1/1) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (32/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 33
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.METHOD;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.SOURCE;) p n
+() N
+(/**) C n
+( * Use null to satisfy the depency.) N
+( *) N
+( * Instead of) N
+( * <PRE>) N
+( * Object obj = null;) N
+( * </PRE>) N
+( *) N
+( * use) N
+( * <PRE>) N
+( * Object obj = knull\(\);) N
+( * </PRE>) N
+( *) N
+( * where) N
+( * <PRE>) N
+( * @UseNull) N
+( * abstract Object knull\(\);) N
+( * </PRE>) N
+( **/) N
+(@Documented) p n
+(@Retention\(SOURCE\)) N
+(@Target\(METHOD\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(UseNull) L
+( {) p n
+(}) N
+(UseNull.java) (Page 1/1) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (33/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 34
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.METHOD;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.SOURCE;) p n
+() N
+(/**) C n
+( * Use a parameter to satisfy the dependency.) N
+( *) N
+( * Instead of) N
+( * <PRE>) N
+( * class X{) N
+( * private Object p;) N
+( * X\(Object p\){) N
+( * this.p = p;) N
+( * }) N
+( * }) N
+( * </PRE>) N
+( *) N
+( * use) N
+( * <PRE>) N
+( * abstract class X{) N
+( * @UseParameter) N
+( * abstract Object getP\(\);) N
+( * }) N
+( * </PRE>) N
+( *) N
+( * X will be an abstract class, but) N
+( * the tidyrailroad depedency injection framework) N
+( * will know how to inject p into it.) N
+( * {@link UseClass}) N
+( * {@link UseConstructor}) N
+( **/) N
+(@Documented) p n
+(@Retention\(SOURCE\)) N
+(@Target\(METHOD\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(UseParameter) L
+( {) p n
+(UseParameter.java) (Page 1/2) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (34/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 35
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(}) p n
+(UseParameter.java) (Page 2/2) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (35/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 36
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.METHOD;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.SOURCE;) p n
+() N
+(/**) C n
+( * Use a property to satisfy the \(string\) dependency.) N
+( *) N
+( * Instead of) N
+( * <PRE>) N
+( * System.out.println\("Hello World!  How are you today?  I am fine."\);) N
+( * </PRE>) N
+( *) N
+( * use) N
+( * <PRE>) N
+( * System.out.println\(greeting\(\)\);) N
+( * </PRE>) N
+( *) N
+( * where) N
+( * <PRE>) N
+( * @UseProperty) N
+( * abstract String greeting\(\);) N
+( * </PRE>) N
+( *) N
+( * and in a properties file) N
+( * <PRE>) N
+( * greeting = "Hello World!  How are you today? I am fine."\);) N
+( * </PRE>) N
+( **/) N
+(@Documented) p n
+(@Retention\(SOURCE\)) N
+(@Target\(METHOD\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(UseProperty) L
+( {) p n
+(}) N
+(UseProperty.java) (Page 1/1) (Oct 28, 15 7:41) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (36/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 37
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.METHOD;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.SOURCE;) p n
+() N
+(/**) C n
+( * Use a static method to satisfy the dependency.) N
+( *) N
+( * Instead of) N
+( * <PRE>) N
+( * double x = Math.sin\(4.0\);) N
+( * </PRE>) N
+( *) N
+( * use) N
+( * <PRE>) N
+( * double x = sin\(4.0\);) N
+( * </PRE>) N
+( *) N
+( * where) N
+( * <PRE>) N
+( * @UseStaticMethod\(Math.class\)) N
+( * abstract double sin \(double x\);) N
+( * </PRE>) N
+( **/) N
+(@Documented) p n
+(@Retention\(SOURCE\)) N
+(@Target\(METHOD\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(UseStaticMethod) L
+( {) p n
+(    ) S
+(/**) C n
+(     * Specifies the class of the static method.) N
+(     *) N
+(     * The dependency will specify the name and parameters) N
+(     * of the static method.) N
+(     **/) N
+(    Class<?> value\(\);) p n
+(}) N
+(UseStaticMethod.java) (Page 1/1) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (37/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 38
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(package) K
+( com.merrymanheavyindustries.tidyrailroad.annotations;) p n
+() N
+(import) K
+( java.lang.annotation.Documented;) p n
+(import) K
+( java.lang.annotation.Retention;) p n
+(import) K
+( java.lang.annotation.Target;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.ElementType.METHOD;) p n
+(import) K
+( ) p
+(static) K
+( java.lang.annotation.RetentionPolicy.SOURCE;) p n
+() N
+(/**) C n
+( * Use an @see java.lang.UnsupportedOperationException to satisfy) N
+( * the dependency.) N
+( *) N
+( * Instead of) N
+( * <PRE>) N
+( * public void set\(Object x\){) N
+( * throw new UnsupportedOperationException\("We do not support this operation"\);) N
+( * }) N
+( * </PRE>) N
+( *) N
+( * use) N
+( * <PRE>) N
+( * @UseUnsupportedOperationException\("We do not support this operation."\)) N
+( * abstract void set\(Object x\);) N
+( * </PRE>) N
+( **/) N
+(@Documented) p n
+(@Retention\(SOURCE\)) N
+(@Target\(METHOD\)) N
+(public) K
+( @) p
+(interface) K
+( ) p
+(UseUnsupportedOperationException) L
+( {) p n
+(    ) S
+(/**) C n
+(     * A format string for the error message.) N
+(     * @see String#format\(\)) N
+(     **/) N
+(    String value\(\);) p n
+(}) N
+(UseUnsupportedOperationException.java) (Page 1/1) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (38/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 39
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+(    Copyright \(C\) 2015) N
+(    Emory Merryman) N
+(    emory.merryman@gmail.com) N
+() N
+(    This file is part of tidyrailroad.) N
+() N
+(    tidyrailroad is free software: you can redistribute it and/or modify) N
+(    it under the terms of the GNU General Public License as published by) N
+(    the Free Software Foundation, either version 3 of the License, or) N
+(    \(at your option\) any later version.) N
+() N
+(    tidyrailroad is distributed in the hope that it will be useful,) N
+(    but WITHOUT ANY WARRANTY; without even the implied warranty of) N
+(    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the) N
+(    GNU General Public License for more details.) N
+() N
+(    You should have received a copy of the GNU General Public License) N
+(    along with tidyrailroad.  If not, see <http://www.gnu.org/licenses/>.) N
+(*/) N
+(/**) C n
+( * Annotations for the tidyrailroad dependency injection system.) N
+( **/) N
+(package-info.java) (Page 1/1) (Oct 28, 15 7:37) title
+border
+grestore
+(Printed by vagrant) rhead
+() (39/40) (Thursday October 29, 2015) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 40
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(Table of Contents) K n
+( 1 ) p
+(COPYING.............) k
+( sheets   1 to  12 \(12\) pages   1- 12  675 lines) p n
+( 2 ) S
+(build.xml...........) k
+( sheets  13 to  14 \( 2\) pages  13- 14  103 lines) p n
+( 3 ) S
+(revision.sh.........) k
+( sheets  15 to  15 \( 1\) pages  15- 15   25 lines) p n
+( 4 ) S
+(checks.xml..........) k
+( sheets  16 to  19 \( 4\) pages  16- 19  190 lines) p n
+( 5 ) S
+(header.txt..........) k
+( sheets  20 to  20 \( 1\) pages  20- 20   21 lines) p n
+( 6 ) S
+(ivy.xml.............) k
+( sheets  21 to  21 \( 1\) pages  21- 21   35 lines) p n
+( 7 ) S
+(ivysettings.xml.....) k
+( sheets  22 to  22 \( 1\) pages  22- 22   35 lines) p n
+( 8 ) S
+(Implementation.java.) k
+( sheets  23 to  23 \( 1\) pages  23- 23   51 lines) p n
+( 9 ) S
+(UnannotatedAbstractMethod.java) k
+( sheets  24 to  25 \( 2\) pages  24- 25   62 line) p n
+(s) N
+(10 ) S
+(UnannotatedConcreteMethod.java) k
+( sheets  26 to  27 \( 2\) pages  26- 27   67 line) p n
+(s) N
+(11 ) S
+(UseCast.java........) k
+( sheets  28 to  28 \( 1\) pages  28- 28   54 lines) p n
+(12 ) S
+(UseClass.java.......) k
+( sheets  29 to  29 \( 1\) pages  29- 29   57 lines) p n
+(13 ) S
+(UseConstructor.java.) k
+( sheets  30 to  31 \( 2\) pages  30- 31   72 lines) p n
+(14 ) S
+(UseInstanceMethod.java) k
+( sheets  32 to  32 \( 1\) pages  32- 32   60 lines) p n
+(15 ) S
+(UseNull.java........) k
+( sheets  33 to  33 \( 1\) pages  33- 33   53 lines) p n
+(16 ) S
+(UseParameter.java...) k
+( sheets  34 to  35 \( 2\) pages  34- 35   61 lines) p n
+(17 ) S
+(UseProperty.java....) k
+( sheets  36 to  36 \( 1\) pages  36- 36   58 lines) p n
+(18 ) S
+(UseStaticMethod.java) k
+( sheets  37 to  37 \( 1\) pages  37- 37   60 lines) p n
+(19 ) S
+(UseUnsupportedOperationException.java) k
+( sheets  38 to  38 \( 1\) pages  38- 38   ) p n
+(56 lines) N
+(20 ) S
+(package-info.java...) k
+( sheets  39 to  39 \( 1\) pages  39- 39   24 lines) p n
+(Table of Content) (Page 1/1) (Oct 29, 15 8:30) title
+border
+grestore
+(Printed by vagrant) rhead
+() (Thursday October 29, 2015) (40/40) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF
